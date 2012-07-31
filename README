@@ -1,0 +1,1 @@
+This package contains mongoengine models for the various other repositories that use the regulations Mongo database, including regulations-scraper and sparerib.
