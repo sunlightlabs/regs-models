@@ -1,0 +1,9 @@
+*.pyc
+.project
+.pydevproject
+*.pickle
+nohup.out
+local_settings.py
+_test*
+oxtail
+pytrie
