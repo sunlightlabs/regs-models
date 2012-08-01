@@ -1,6 +1,6 @@
 from mongoengine import *
 
-from html2text import *
+import html2text
 html2text.IGNORE_IMAGES = True
 html2text.BODY_WIDTH = 0
 
