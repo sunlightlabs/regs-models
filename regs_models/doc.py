@@ -1,8 +1,12 @@
 from mongoengine import *
 
-import html2text
+import re, html2text, HTMLParser
 html2text.IGNORE_IMAGES = True
 html2text.BODY_WIDTH = 0
+
+_tag_stripper = re.compile(r'<[^>]*?>')
+def strip_tags(text):
+    return _tag_stripper.sub('', text)
 
 class View(EmbeddedDocument):
     # data
@@ -35,17 +39,21 @@ class View(EmbeddedDocument):
     }
 
     def as_text(self):
-        out = self.content.read()
+        out = unicode(self.content.read(), 'utf-8', 'ignore')
         if self.mode == "text":
             return out
         else:
-            return html2text.html2text(out)
+            try:
+                return html2text.html2text(out)
+            except HTMLParser.HTMLParseError:
+                # if we get bad HTML, just strip out the tags
+                return strip_tags(out)
 
     def as_html(self):
-        out = self.content.read()
+        out = unicode(self.content.read(), 'utf-8', 'ignore')
         if self.mode == "text":
             # could probably do this better, but can wait
-            return "<html><body><pre>%s</pre></body></html>" % out
+            return u"<html><body><pre>%s</pre></body></html>" % out
         else:
             return out
 
