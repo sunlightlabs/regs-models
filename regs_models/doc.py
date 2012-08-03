@@ -39,7 +39,7 @@ class View(EmbeddedDocument):
     }
 
     def as_text(self):
-        out = unicode(self.content.read(), 'utf-8', 'ignore')
+        out = unicode(self.content.read(), 'utf-8', 'ignore') if self.content else u''
         if self.mode == "text":
             return out
         else:
@@ -50,7 +50,7 @@ class View(EmbeddedDocument):
                 return strip_tags(out)
 
     def as_html(self):
-        out = unicode(self.content.read(), 'utf-8', 'ignore')
+        out = unicode(self.content.read(), 'utf-8', 'ignore') if self.content else u''
         if self.mode == "text":
             # could probably do this better, but can wait
             return u"<html><body><pre>%s</pre></body></html>" % out
