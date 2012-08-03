@@ -4,5 +4,10 @@ from agency import Agency
 from entity import Entity
 
 from mongoengine import connect
-from settings import DB_NAME, DB_SETTINGS
-connect(DB_NAME, **DB_SETTINGS)
+
+try:
+    from django.conf import settings
+except ImportError:
+    import settings
+
+connect(getattr(settings, "DB_NAME", "regulations"), **getattr(settings, "DB_SETTINGS", {}))
