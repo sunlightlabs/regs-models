@@ -67,6 +67,9 @@ class Attachment(EmbeddedDocument):
     # sub-docs
     views = ListField(field=EmbeddedDocumentField(View))
 
+    def canonical_view(self):
+        return _preferred_view(views)
+
     meta = {
         'allow_inheritance': False,
     }
@@ -96,6 +99,16 @@ class Doc(Document):
     # sub-docs
     views = ListField(field=EmbeddedDocumentField(View))
     attachments = ListField(field=EmbeddedDocumentField(Attachment))
+
+    def canonical_view(self):
+        all_views = [_preferred_view(self.views)] + [_preferred_view(a.views) for a in self.attachments]
+        if all_views:
+            all_views.sort(key=lambda v: len(v.as_text()), reverse=True)
+            return all_views[0]
+
+        return None
+
+
 
     # flags
     deleted = BooleanField(default=False)
@@ -142,3 +155,16 @@ DOC_TYPES = {
     'Rule': 'rule',
     'Proposed Rule': 'proposed_rule'
 }
+
+def _preferred_view(views):
+    """Return the preferred canonical view based on file type."""
+
+    html_views = [v for v in views if v.type == 'html']
+    if html_views:
+        return html_views[0]
+    
+    pdf_views = [v for v in views if v.type == 'pdf']
+    if pdf_views:
+        return pdf_views[0]
+
+    return views[0]
