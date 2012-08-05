@@ -68,7 +68,7 @@ class Attachment(EmbeddedDocument):
     views = ListField(field=EmbeddedDocumentField(View))
 
     def canonical_view(self):
-        return _preferred_view(views)
+        return _preferred_view(self.views)
 
     meta = {
         'allow_inheritance': False,
@@ -101,13 +101,7 @@ class Doc(Document):
     attachments = ListField(field=EmbeddedDocumentField(Attachment))
 
     def canonical_view(self):
-        all_views = [_preferred_view(self.views)] + [_preferred_view(a.views) for a in self.attachments]
-        if all_views:
-            all_views.sort(key=lambda v: len(v.as_text()), reverse=True)
-            return all_views[0]
-
-        return None
-
+        return _preferred_view(self.views)
 
 
     # flags
