@@ -7,6 +7,8 @@ from mongoengine import connect
 
 try:
     from django.conf import settings
+    # force evaluation of the settings so the ImportError gets raised in the right place
+    dir(settings)
 except ImportError:
     import settings
 

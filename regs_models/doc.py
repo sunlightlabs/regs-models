@@ -150,15 +150,27 @@ DOC_TYPES = {
     'Proposed Rule': 'proposed_rule'
 }
 
+class EmptyView(object):
+    def as_text(self):
+        return ""
+
+    type = None
+
+VIEW_TYPE_PREFERENCE = {
+    'html': 4, 'xml': 4, 'crtext': 4,
+    'msw':3, 'msw6': 3, 'msw8': 3, 'msw12': 3,
+    'docx': 3,
+    'rtf': 3,
+    'wp8': 3,
+    'txt': 2,
+    'pdf': 1
+}
 def _preferred_view(views):
     """Return the preferred canonical view based on file type."""
 
-    html_views = [v for v in views if v.type == 'html']
-    if html_views:
-        return html_views[0]
-    
-    pdf_views = [v for v in views if v.type == 'pdf']
-    if pdf_views:
-        return pdf_views[0]
+    extracted_views = [v for v in views if v.extracted == 'yes']
+    if not extracted_views:
+        return EmptyView()
 
-    return views[0]
+    sorted_views = sorted(extracted_views, key=lambda v: VIEW_TYPE_PREFERENCE.get(v.type, 0), reverse=True)
+    return sorted_views[0]
