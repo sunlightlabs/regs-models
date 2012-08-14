@@ -67,12 +67,12 @@ class Attachment(EmbeddedDocument):
     # sub-docs
     views = ListField(field=EmbeddedDocumentField(View))
 
-    def canonical_view(self):
-        return _preferred_view(self.views)
-
     meta = {
         'allow_inheritance': False,
     }
+
+    def canonical_view(self):
+        return _preferred_view(self.views)
 
 
 class Doc(Document):
@@ -99,10 +99,6 @@ class Doc(Document):
     # sub-docs
     views = ListField(field=EmbeddedDocumentField(View))
     attachments = ListField(field=EmbeddedDocumentField(Attachment))
-
-    def canonical_view(self):
-        return _preferred_view(self.views)
-
 
     # flags
     deleted = BooleanField(default=False)
@@ -140,6 +136,35 @@ class Doc(Document):
             ('deleted', 'attachments.views.downloaded', 'attachments.views.extracted', 'agency')
         ]
     }
+
+    def canonical_view(self):
+        return _preferred_view(self.views)
+
+    def get_summary(self):
+        # for FR docs, do some regex schenanigans to try to extract some summary text
+        if self.type not in ['propsed_rule', 'rule', 'notice']:
+            raise NotImplementedError()
+
+        # find a candidate view
+        views = [view for view in self.views if view.type == "html" and view.extracted == "yes"]
+        if not views:
+            return None
+
+        text = views[0].as_text()
+
+        # strip extra indentation
+        text = text.replace("\n    ", "\n")
+
+        # strip page breaks
+        text = re.sub(r"[\n\r]+\[\[Page \d+\]\][\r\n]+", "\n", text)
+
+        # find the summary block
+        matches = re.findall(r"SUMMARY: (.*?)(?:\r?\n){2,}", text, re.MULTILINE | re.DOTALL)
+        if not matches:
+            return None
+
+        # collapse spaces and return
+        return re.sub("\s+", " ", matches[0])
 
 DOC_TYPES = {
     'Public Submission': 'public_submission',
