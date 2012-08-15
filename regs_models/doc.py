@@ -142,7 +142,7 @@ class Doc(Document):
 
     def get_summary(self):
         # for FR docs, do some regex schenanigans to try to extract some summary text
-        if self.type not in ['propsed_rule', 'rule', 'notice']:
+        if self.type not in ['proposed_rule', 'rule', 'notice']:
             raise NotImplementedError()
 
         # find a candidate view
