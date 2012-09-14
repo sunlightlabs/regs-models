@@ -1,4 +1,5 @@
 from mongoengine import *
+from export import ExportQuerySet
 
 import re, html2text, HTMLParser
 html2text.IGNORE_IMAGES = True
