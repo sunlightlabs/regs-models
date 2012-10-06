@@ -44,11 +44,14 @@ class View(EmbeddedDocument):
         if self.mode == "text":
             return out
         else:
-            try:
-                return html2text.html2text(out)
-            except HTMLParser.HTMLParseError:
-                # if we get bad HTML, just strip out the tags
-                return strip_tags(out)
+            text_out = None
+            if len(out) <= 100000:
+                try:
+                    text_out = html2text.html2text(out)
+                except HTMLParser.HTMLParseError:
+                    pass
+            # if we get bad HTML or the HTML is too long, just strip out the tags
+            return text_out if text_out is not None else strip_tags(out)
 
     def as_html(self):
         out = unicode(self.content.read(), 'utf-8', 'ignore') if self.content else u''
