@@ -129,6 +129,7 @@ class Doc(Document):
     meta = {
         'allow_inheritance': False,
         'collection': 'docs',
+        'queryset_class': ExportQuerySet,
 
         'indexes': [
             'docket_id',
