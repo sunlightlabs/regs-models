@@ -28,13 +28,19 @@ class ExportQuerySet(QuerySet):
                     
                 views = [('view', view) for view in doc.views]
                 for attachment in doc.attachments:
-                    views.extend([('attachment', view) for view in attachment.views])
+                    title = attachment.title
+                    for view in attachment.views:
+                        if title:
+                            view.title = title
+                        views.append(('attachment', view))
                 
                 for type, view in views:
                     file = extract(
                         view,
                         ['downloaded', 'extracted', 'url']
                     )
+                    if hasattr(view, 'title'):
+                        file['title'] = view.title
                     if view.extracted == 'yes':
                         filename = '%s_%s_%s.txt' % (type, view.object_id, view.type)
                         file['filename'] = filename
