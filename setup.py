@@ -26,5 +26,5 @@ setup(
         'Programming Language :: Python',
         'Environment :: Web Environment',
     ],
-    install_requires=["pymongo", "mongoengine", "html2text"]
+    install_requires=["pymongo", "mongoengine", "html2text", "PyYaml"]
 )
