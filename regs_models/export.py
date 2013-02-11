@@ -1,5 +1,6 @@
 from mongoengine.queryset import QuerySet
 from docket import Docket
+from entity import Entity
 from collections import OrderedDict
 import zipfile
 import json
@@ -19,10 +20,25 @@ def extract(record, keys):
             out[key[1:] if key.startswith("_") else key] = record[key]
     return out
 
+def get_entity(entity_id, cache):
+    if entity_id not in cache:
+        entities = Entity.objects(id=entity_id)
+        if len(entities):
+            entity = entities[0]
+            cache[entity_id] = {
+                'id': entity_id,
+                'name': entity.aliases[0], # use aliases[0] instead of td_name because aliases have been standardized
+                'type': entity.td_type
+            }
+        else:
+            cache[entity_id] = None
+    return cache[entity_id]
+
 class ExportQuerySet(QuerySet):
     def export_to_zip(self, filename):
         with zipfile.ZipFile(filename, 'a', zipfile.ZIP_DEFLATED, True) as export_zip:
             dockets = set()
+            entity_cache = {}
             for doc in self:
                 files = []
                     
@@ -41,6 +57,12 @@ class ExportQuerySet(QuerySet):
                     )
                     if hasattr(view, 'title'):
                         file['title'] = view.title
+                    if len(view.entities) > 0:
+                        file['mentioned_entities'] = []
+                        for entity_id in view.entities:
+                            entity = get_entity(entity_id, entity_cache)
+                            if entity:
+                                file['mentioned_entities'].append(entity.copy())
                     if view.extracted == 'yes':
                         filename = '%s_%s_%s.txt' % (type, view.object_id, view.type)
                         file['filename'] = filename
@@ -55,6 +77,13 @@ class ExportQuerySet(QuerySet):
                 )
                 if doc.comment_on:
                     metadata['comment_on'] = extract(doc.comment_on, ['document_id', 'title', 'type'])
+
+                if len(doc.submitter_entities) > 0:
+                    metadata['submitter_entities'] = []
+                    for entity_id in doc.submitter_entities:
+                        entity = get_entity(entity_id, entity_cache)
+                        if entity:
+                            metadata['submitter_entities'].append(entity.copy())
 
                 metadata['files'] = files
                 
