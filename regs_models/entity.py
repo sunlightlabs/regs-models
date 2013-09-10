@@ -10,10 +10,15 @@ class Entity(Document):
     aliases = ListField()
     filtered_aliases = ListField()
 
+    searchable = BooleanField(default=False)
+
     stats = DictField()
 
     meta = {
         'allow_inheritance': False,
         'collection': 'entities',
-        'indexes': ['td_type']
+        'indexes': [
+            'td_type',
+            (('searchable', 1), ('aliases', 'text'))
+        ]
     }
