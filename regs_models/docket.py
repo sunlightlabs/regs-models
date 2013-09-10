@@ -15,6 +15,7 @@ class Docket(Document):
         default="no",
         choices=["no", "failed", "yes"]
     )
+    in_search_index = BooleanField(default=False)
 
     meta = {
         'allow_inheritance': False,
