@@ -10,5 +10,8 @@ class Agency(Document):
 
     meta = {
         'allow_inheritance': False,
-        'collection': 'agencies'
+        'collection': 'agencies',
+        'indexes': [
+            (('_id', 'text'), ('name', 'text'))
+        ]
     }
