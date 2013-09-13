@@ -19,6 +19,7 @@ class Entity(Document):
         'collection': 'entities',
         'indexes': [
             'td_type',
+            'searchable',
             (('searchable', 1), ('aliases', 'text'))
         ]
     }
