@@ -17,6 +17,8 @@ class Docket(Document):
     )
     in_search_index = BooleanField(default=False)
 
+    source = StringField(default="regulations.gov")
+
     meta = {
         'allow_inheritance': False,
         'collection': 'dockets'
