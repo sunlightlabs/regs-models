@@ -11,6 +11,9 @@ class Docket(Document):
     details = DictField()
     stats = DictField()
 
+    # extra bucket to put internally-constructed metadata that should be preserved across docket rebuilds
+    annotations = DictField()
+
     scraped = StringField(
         default="no",
         choices=["no", "failed", "yes"]

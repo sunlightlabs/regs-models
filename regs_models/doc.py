@@ -126,6 +126,9 @@ class Doc(Document):
     # aggregate dict for FR docs
     stats = DictField()
 
+    # extra bucket to put internally-constructed metadata that should be preserved across document rebuilds
+    annotations = DictField()
+
     meta = {
         'allow_inheritance': False,
         'collection': 'docs',
