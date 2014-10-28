@@ -5,6 +5,7 @@ class Agency(Document):
     name = StringField()
 
     rdg_participating = BooleanField(default=False)
+    fr_id = IntField()
 
     stats = DictField()
 
