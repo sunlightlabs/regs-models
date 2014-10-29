@@ -128,6 +128,7 @@ class Doc(Document):
 
     # extra bucket to put internally-constructed metadata that should be preserved across document rebuilds
     annotations = DictField()
+    suppression = DictField()
 
     meta = {
         'allow_inheritance': False,

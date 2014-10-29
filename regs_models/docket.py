@@ -21,6 +21,8 @@ class Docket(Document):
     in_search_index = BooleanField(default=False)
 
     source = StringField(default="regulations.gov")
+    
+    suppression = DictField()
 
     meta = {
         'allow_inheritance': False,
