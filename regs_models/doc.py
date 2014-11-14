@@ -48,7 +48,7 @@ class View(EmbeddedDocument):
             if len(out) <= 100000:
                 try:
                     text_out = html2text.html2text(out)
-                except HTMLParser.HTMLParseError:
+                except (HTMLParser.HTMLParseError, ValueError):
                     pass
             # if we get bad HTML or the HTML is too long, just strip out the tags
             return text_out if text_out is not None else strip_tags(out)
