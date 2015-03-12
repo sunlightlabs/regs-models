@@ -61,6 +61,22 @@ class View(EmbeddedDocument):
         else:
             return out
 
+    _content = None
+    def write_on_save(self, content):
+        self._content = content
+
+    def clean(self):
+        if self._content:
+            if self.content:
+                self.content.delete()
+
+            self.content.new_file()
+            self.content.write(self._content)
+            self.content.close()
+
+            self._content = None
+
+
 
 class Attachment(EmbeddedDocument):
     # data
