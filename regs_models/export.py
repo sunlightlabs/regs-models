@@ -35,42 +35,43 @@ def get_entity(entity_id, cache):
     return cache[entity_id]
 
 class ExportQuerySet(QuerySet):
-    def export_to_zip(self, filename):
+    def export_to_zip(self, filename, metadata_only=False):
         with zipfile.ZipFile(filename, 'a', zipfile.ZIP_DEFLATED, True) as export_zip:
             dockets = set()
             entity_cache = {}
             for doc in self:
-                files = []
+                if not metadata_only:
+                    files = []
                     
-                views = [('view', doc.views[i]) for i in xrange(len(doc.views))]
-                for attachment in (doc.attachments[i] for i in xrange(len(doc.attachments))):
-                    title = attachment.title
-                    for view in (attachment.views[i] for i in xrange(len(attachment.views))):
-                        if title:
-                            view.title = title
-                        views.append(('attachment', view))
-                
-                for type, view in views:
-                    file = extract(
-                        view,
-                        ['downloaded', 'extracted']
-                    )
-                    file['url'] = view.download_url
-                    if hasattr(view, 'title'):
-                        file['title'] = view.title
-                    if len(view.entities) > 0:
-                        file['mentioned_entities'] = []
-                        for entity_id in view.entities:
-                            entity = get_entity(entity_id, entity_cache)
-                            if entity:
-                                file['mentioned_entities'].append(entity.copy())
-                    if view.extracted == 'yes':
-                        filename = '%s_%s_%s.txt' % (type, view.object_id, view.type)
-                        file['filename'] = filename
+                    views = [('view', doc.views[i]) for i in xrange(len(doc.views))]
+                    for attachment in (doc.attachments[j] for j in xrange(len(doc.attachments))):
+                        title = attachment.title
+                        for view in (attachment.views[k] for k in xrange(len(attachment.views))):
+                            if title:
+                                view.title = title
+                            views.append(('attachment', view))
+                    
+                    for type, view in views:
+                        file = extract(
+                            view,
+                            ['downloaded', 'extracted']
+                        )
+                        file['url'] = view.download_url
+                        if hasattr(view, 'title'):
+                            file['title'] = view.title
+                        if len(view.entities) > 0:
+                            file['mentioned_entities'] = []
+                            for entity_id in view.entities:
+                                entity = get_entity(entity_id, entity_cache)
+                                if entity:
+                                    file['mentioned_entities'].append(entity.copy())
+                        if view.extracted == 'yes':
+                            filename = '%s_%s_%s.txt' % (type, view.object_id, view.type)
+                            file['filename'] = filename
+                            
+                            export_zip.writestr(os.path.join(doc.docket_id, doc.id, filename), view.as_text().encode('utf8'))
                         
-                        export_zip.writestr(os.path.join(doc.docket_id, doc.id, filename), view.as_text().encode('utf8'))
-                        
-                    files.append(file)
+                        files.append(file)
                     
                 metadata = extract(
                     doc,
@@ -86,12 +87,16 @@ class ExportQuerySet(QuerySet):
                         if entity:
                             metadata['submitter_entities'].append(entity.copy())
 
-                metadata['files'] = files
-                
+                if metadata_only:
+                    metadata_filename = os.path.join(doc.docket_id, '%s.yaml' % doc.id)
+                else:
+                    metadata['files'] = files
+                    metadata_filename = os.path.join(doc.docket_id, doc.id, 'metadata.yaml')
+                    
                 try:
-                    export_zip.writestr(os.path.join(doc.docket_id, doc.id, 'metadata.yaml'), to_yaml(metadata))
+                    export_zip.writestr(metadata_filename, to_yaml(metadata))
                 except:
-                    export_zip.writestr(os.path.join(doc.docket_id, doc.id, 'metadata.json'), json.dumps(metadata, default=dthandler, indent=4))
+                    export_zip.writestr(metadata_filename.replace('.yaml', '.json'), json.dumps(metadata, default=dthandler, indent=4))
 
                 dockets.add(doc.docket_id)
 
@@ -99,7 +104,7 @@ class ExportQuerySet(QuerySet):
                 docket = Docket.objects(id=docket_id)
                 if docket:
                     export_zip.writestr(
-                        os.path.join(docket_id, 'metadata.yaml'),
+                        os.path.join(docket_id, 'docket_metadata.yaml' if metadata_only else 'metadata.yaml'),
                         to_yaml(
                             extract(
                                 docket[0],
