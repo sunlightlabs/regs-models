@@ -89,7 +89,8 @@ class View(EmbeddedDocument):
             return "http://docketwrench.sunlightfoundation.com/api/1.0/document/%s/view_txt.txt" % self._instance.id
         else:
             # we should proxy this file
-            return "http://docketwrench.sunlightfoundation.com/api/1.0/document/%s/file_proxy/%s.%s" % (self._instance.id, self.object_id, self.type)
+            document_id = self._instance._instance.id if self._instance.__class__ is Attachment else self._instance.id
+            return "http://docketwrench.sunlightfoundation.com/api/1.0/document/%s/file_proxy/%s.%s" % (document_id, self.object_id, self.type)
 
 
 
