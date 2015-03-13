@@ -76,6 +76,22 @@ class View(EmbeddedDocument):
 
             self._content = None
 
+    @property
+    def download_url(self):
+        if not self.url:
+            return self.url
+
+        if 'api.data.gov' not in self.url:
+            return self.url
+
+        if '/download' not in self.url and self.type == 'txt':
+            # this is one we faked from an API response, so there's nothing to proxy; just use the text endpoint from DW
+            return "http://docketwrench.sunlightfoundation.com/api/1.0/document/%s/view_txt.txt" % self._instance.id
+        else:
+            # we should proxy this file
+            return "http://docketwrench.sunlightfoundation.com/api/1.0/document/%s/file_proxy/%s.%s" % (self._instance.id, self.object_id, self.type)
+
+
 
 
 class Attachment(EmbeddedDocument):
