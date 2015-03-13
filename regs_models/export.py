@@ -42,10 +42,10 @@ class ExportQuerySet(QuerySet):
             for doc in self:
                 files = []
                     
-                views = [('view', view) for view in doc.views]
-                for attachment in doc.attachments:
+                views = [('view', doc.views[i]) for i in xrange(len(doc.views))]
+                for attachment in (doc.attachments[i] for i in xrange(len(doc.attachments))):
                     title = attachment.title
-                    for view in attachment.views:
+                    for view in (attachment.views[i] for i in xrange(len(attachment.views))):
                         if title:
                             view.title = title
                         views.append(('attachment', view))
@@ -53,8 +53,9 @@ class ExportQuerySet(QuerySet):
                 for type, view in views:
                     file = extract(
                         view,
-                        ['downloaded', 'extracted', 'url']
+                        ['downloaded', 'extracted']
                     )
+                    file['url'] = view.download_url
                     if hasattr(view, 'title'):
                         file['title'] = view.title
                     if len(view.entities) > 0:
